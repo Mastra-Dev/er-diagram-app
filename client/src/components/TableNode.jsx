@@ -1,8 +1,22 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 
-const TableNode = ({ data, id }) => {
+const TableNode = ({ data, id, selected }) => {
     const { label, columns, onAddColumn, onUpdateTableName, onUpdateColumn } = data;
+
+    // Only show handles when selected
+    const handleStyle = {
+        background: '#747bff',
+        opacity: selected ? 1 : 0,
+        transition: 'opacity 0.2s',
+        pointerEvents: selected ? 'all' : 'none' // Prevent interaction when hidden
+    };
+
+    const columnHandleStyle = {
+        ...handleStyle,
+        width: '8px',
+        height: '8px'
+    };
 
     return (
         <div className="table-node">
@@ -13,7 +27,7 @@ const TableNode = ({ data, id }) => {
                     onChange={(e) => onUpdateTableName(id, e.target.value)}
                     placeholder="Table Name"
                 />
-                <Handle type="target" position={Position.Top} style={{ background: '#747bff' }} />
+                <Handle type="target" position={Position.Top} style={handleStyle} />
             </div>
             <div className="table-node-body">
                 {columns.map((col, index) => (
@@ -40,13 +54,13 @@ const TableNode = ({ data, id }) => {
                             type="target"
                             position={Position.Left}
                             id={`target-${index}`}
-                            style={{ background: '#747bff', left: '-8px', width: '8px', height: '8px' }}
+                            style={{ ...columnHandleStyle, left: '-8px' }}
                         />
                         <Handle
                             type="source"
                             position={Position.Right}
                             id={`source-${index}`}
-                            style={{ background: '#747bff', right: '-8px', width: '8px', height: '8px' }}
+                            style={{ ...columnHandleStyle, right: '-8px' }}
                         />
                     </div>
                 ))}
@@ -54,7 +68,7 @@ const TableNode = ({ data, id }) => {
                     + Add Column
                 </div>
             </div>
-            <Handle type="source" position={Position.Bottom} style={{ background: '#747bff' }} />
+            <Handle type="source" position={Position.Bottom} style={handleStyle} />
         </div>
     );
 };

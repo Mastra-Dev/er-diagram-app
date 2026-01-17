@@ -153,7 +153,7 @@ function AppContent() {
     }
   };
 
-  const loadDiagram = async () => {
+  const loadDiagram = useCallback(async () => {
     // Load latest for now
     try {
       const res = await fetch(`${API_URL}/load`);
@@ -179,14 +179,17 @@ function AppContent() {
           setNodes(hydratedNodes);
           setEdges(loadedData.edges || []);
         }
-      } else {
-        alert('No saved diagrams found.');
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to load');
+      // alert('Failed to load'); // Suppress error on auto-load
     }
-  };
+  }, [onUpdateTableName, onAddColumn, onUpdateColumn, setNodes, setEdges]);
+
+  // Auto-load on mount
+  useEffect(() => {
+    loadDiagram();
+  }, [loadDiagram]);
 
   return (
     <div className="app-layout">

@@ -35,7 +35,19 @@ const TableNode = ({ data, id }) => {
                             placeholder="bigint"
                             style={{ width: '60px', textAlign: 'right', color: '#747bff' }}
                         />
-                        {/* Handles for column connections (optional, for now just global handles) */}
+                        {/* Handles for column connections */}
+                        <Handle
+                            type="target"
+                            position={Position.Left}
+                            id={`target-${index}`}
+                            style={{ background: '#747bff', left: '-8px', width: '8px', height: '8px' }}
+                        />
+                        <Handle
+                            type="source"
+                            position={Position.Right}
+                            id={`source-${index}`}
+                            style={{ background: '#747bff', right: '-8px', width: '8px', height: '8px' }}
+                        />
                     </div>
                 ))}
                 <div className="table-row" style={{ justifyContent: 'center', opacity: 0.5 }} onClick={() => onAddColumn(id)}>

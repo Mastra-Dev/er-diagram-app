@@ -13,9 +13,14 @@ import '@xyflow/react/dist/style.css';
 
 import TableNode from './components/TableNode';
 import Sidebar from './components/Sidebar';
+import CustomEdge from './components/CustomEdge';
 
 const nodeTypes = {
   table: TableNode,
+};
+
+const edgeTypes = {
+  'custom-edge': CustomEdge,
 };
 
 const initialNodes = [
@@ -44,7 +49,9 @@ function AppContent() {
   const [diagramId, setDiagramId] = useState(null);
 
   // Callbacks for Node interactions
-  const onConnect = useCallback((params) => setEdges((eds) => addEdge(params, eds)), [setEdges]);
+  const onConnect = useCallback((params) => {
+    setEdges((eds) => addEdge({ ...params, type: 'custom-edge', data: { relationType: '1:1' }, style: { strokeWidth: 2, stroke: '#e0e0e0' } }, eds));
+  }, [setEdges]);
 
   const updateNodeData = (nodeId, processData) => {
     setNodes((nds) =>
@@ -208,6 +215,7 @@ function AppContent() {
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           fitView
           colorMode="dark"
         >

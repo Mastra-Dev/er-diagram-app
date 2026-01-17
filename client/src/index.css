@@ -50,7 +50,7 @@ body {
   min-width: 200px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
   font-size: 14px;
-  overflow: hidden;
+  /* overflow: hidden; Removed to show handles */
 }
 
 .table-node-header {
@@ -69,6 +69,8 @@ body {
 }
 
 .table-row {
+  position: relative;
+  /* Critical for handle positioning */
   display: flex;
   justify-content: space-between;
   padding: 4px 12px;
@@ -171,7 +173,132 @@ input.editable-input:focus {
   padding: 8px;
 }
 
-/* ... existing styles ... */
+/* ... restored styles ... */
+.sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sidebar-header h3 {
+  margin: 0;
+  font-size: 16px;
+  color: #fff;
+}
+
+.add-btn {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background 0.2s;
+}
+
+.add-btn:hover {
+  background: var(--accent);
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.sidebar-item-icon {
+  margin-right: 10px;
+  font-size: 14px;
+}
+
+.sidebar-item-label {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-empty {
+  padding: 20px;
+  text-align: center;
+  color: #555;
+  font-size: 13px;
+}
+
+/* Sidebar Detail Styling */
+.sidebar-group {
+  border-bottom: 1px solid #333;
+}
+
+.sidebar-group.active {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sidebar-toggle-icon {
+  font-size: 10px;
+  margin-left: auto;
+  color: #666;
+}
+
+.sidebar-details {
+  padding: 0 12px 12px 12px;
+}
+
+.detail-row {
+  margin-bottom: 12px;
+}
+
+.detail-row label,
+.detail-columns label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  color: #666;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+
+.sidebar-input {
+  width: 100%;
+  background: #111;
+  border: 1px solid #333;
+  padding: 6px 8px;
+  color: white;
+  border-radius: 4px;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.sidebar-input:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+.column-row {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  align-items: center;
+  flex-wrap: nowrap;
+  /* Ensure no wrapping */
+}
 
 .col-input {
   background: #111;
@@ -231,8 +358,26 @@ input.editable-input:focus {
   transition: all 0.2s;
 }
 
-.add-col-btn:hover {
-  background: #333;
-  color: white;
-  border-color: #666;
+/* Edge Menu Styling */
+.edge-btn {
+  border: none;
+  background: transparent;
+  color: #e0e0e0;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.edge-btn:hover {
+  background: #444;
+}
+
+.edge-btn.delete {
+  color: #ff6b6b;
+}
+
+.edge-btn.delete:hover {
+  background: rgba(255, 107, 107, 0.2);
 }

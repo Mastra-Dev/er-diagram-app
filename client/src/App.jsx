@@ -115,6 +115,11 @@ function AppContent() {
     setNodes((nds) => nds.concat(newNode));
   };
 
+  const deleteTable = (id) => {
+    setNodes((nds) => nds.filter((node) => node.id !== id));
+    setEdges((eds) => eds.filter((edge) => edge.source !== id && edge.target !== id));
+  };
+
   const saveDiagram = async () => {
     // Only save serializable data (remove functions)
     const serializableNodes = nodes.map(n => ({
@@ -191,6 +196,7 @@ function AppContent() {
         onUpdateTableName={onUpdateTableName}
         onAddColumn={onAddColumn}
         onUpdateColumn={onUpdateColumn}
+        onDeleteTable={deleteTable}
       />
       <div style={{ flex: 1, position: 'relative', height: '100vh' }}>
 

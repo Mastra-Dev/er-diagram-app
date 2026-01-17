@@ -381,3 +381,23 @@ input.editable-input:focus {
 .edge-btn.delete:hover {
   background: rgba(255, 107, 107, 0.2);
 }
+
+.delete-table-btn {
+  width: 100%;
+  background: rgba(255, 77, 77, 0.1);
+  border: 1px solid rgba(255, 77, 77, 0.3);
+  color: #ff6b6b;
+  padding: 8px;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-top: 12px;
+  transition: all 0.2s;
+  font-weight: 600;
+}
+
+.delete-table-btn:hover {
+  background: rgba(255, 77, 77, 0.25);
+  border-color: #ff6b6b;
+  color: #ff4d4d;
+}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
 
-const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateColumn }) => {
+const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteTable }) => {
     const { setCenter } = useReactFlow();
     const [activeNodeId, setActiveNodeId] = useState(null);
 
@@ -69,6 +69,12 @@ const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateCo
                                         ))}
                                         <button className="add-col-btn" onClick={() => onAddColumn(node.id)}>
                                             + Add Column
+                                        </button>
+                                        <button
+                                            className="delete-table-btn"
+                                            onClick={() => onDeleteTable(node.id)}
+                                        >
+                                            Delete Table
                                         </button>
                                     </div>
                                 </div>

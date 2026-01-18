@@ -35,8 +35,8 @@ const initialNodes = [
     data: {
       label: 'users',
       columns: [
-        { name: 'id', type: 'bigint', isPk: true },
-        { name: 'email', type: 'varchar', isPk: false }
+        { id: 'c1', name: 'id', type: 'bigint', isPk: true },
+        { id: 'c2', name: 'email', type: 'varchar', isPk: false }
       ]
     },
   },
@@ -79,7 +79,7 @@ function AppContent() {
   const onAddColumn = useCallback((id) => {
     updateNodeData(id, (data) => ({
       ...data,
-      columns: [...data.columns, { name: 'new_col', type: 'varchar', isPk: false }]
+      columns: [...data.columns, { id: Math.random().toString(36).substr(2, 9), name: 'new_col', type: 'varchar', isPk: false }]
     }));
     setTriggerSave(Date.now());
   }, []);
@@ -98,6 +98,14 @@ function AppContent() {
       const newCols = data.columns.filter((_, index) => index !== colIndex);
       return { ...data, columns: newCols };
     });
+    setTriggerSave(Date.now());
+  }, []);
+
+  const onReorderColumns = useCallback((nodeId, newColumns) => {
+    updateNodeData(nodeId, (data) => ({
+      ...data,
+      columns: newColumns
+    }));
     setTriggerSave(Date.now());
   }, []);
 
@@ -126,7 +134,7 @@ function AppContent() {
       position: { x: Math.random() * 400 + 100, y: Math.random() * 400 + 50 },
       data: {
         label: 'new_table',
-        columns: [{ name: 'id', type: 'bigint', isPk: true }],
+        columns: [{ id: Math.random().toString(36).substr(2, 9), name: 'id', type: 'bigint', isPk: true }],
         onUpdateTableName,
         onAddColumn,
         onUpdateTableName,
@@ -217,6 +225,7 @@ function AppContent() {
           type: 'table',
           data: {
             ...n.data,
+            columns: n.data.columns.map(c => ({ ...c, id: c.id || Math.random().toString(36).substr(2, 9) })), // Ensure ID
             onUpdateTableName,
             onAddColumn,
             onUpdateTableName,
@@ -293,6 +302,7 @@ function AppContent() {
         onAddColumn={onAddColumn}
         onUpdateColumn={onUpdateColumn}
         onDeleteColumn={onDeleteColumn}
+        onReorderColumns={onReorderColumns}
         onDeleteTable={deleteTable}
       />
       <div style={{ flex: 1, position: 'relative', height: '100vh' }}>

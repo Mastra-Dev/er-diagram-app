@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useReactFlow } from '@xyflow/react';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaBars } from 'react-icons/fa';
+import { Reorder } from 'framer-motion';
 
-const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, onDeleteTable }) => {
+const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, onReorderColumns, onDeleteTable }) => {
     const { setCenter } = useReactFlow();
     const [activeNodeId, setActiveNodeId] = useState(null);
 
@@ -45,37 +46,52 @@ const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateCo
                                     </div>
                                     <div className="detail-columns">
                                         <label>Columns</label>
-                                        {node.data.columns.map((col, idx) => (
-                                            <div key={idx} className="column-row">
-                                                <input
-                                                    className="col-input name"
-                                                    value={col.name}
-                                                    onChange={(e) => onUpdateColumn(node.id, idx, 'name', e.target.value)}
-                                                    placeholder="Name"
-                                                />
-                                                <input
-                                                    className="col-input type"
-                                                    value={col.type}
-                                                    onChange={(e) => onUpdateColumn(node.id, idx, 'type', e.target.value)}
-                                                    placeholder="Type"
-                                                />
-                                                <div
-                                                    className={`col-pk ${col.isPk ? 'active' : ''}`}
-                                                    onClick={() => onUpdateColumn(node.id, idx, 'isPk', !col.isPk)}
-                                                    title="Toggle Primary Key"
+                                        <Reorder.Group
+                                            axis="y"
+                                            values={node.data.columns}
+                                            onReorder={(newOrder) => onReorderColumns(node.id, newOrder)}
+                                            style={{ padding: 0, margin: 0, listStyleType: 'none' }}
+                                        >
+                                            {node.data.columns.map((col, idx) => (
+                                                <Reorder.Item
+                                                    key={col.id}
+                                                    value={col}
+                                                    className="column-row"
+                                                    style={{ cursor: 'grab' }}
                                                 >
-                                                    🔑
-                                                </div>
-                                                <button
-                                                    className="edge-btn delete"
-                                                    style={{ marginLeft: '4px', padding: '4px' }}
-                                                    onClick={() => onDeleteColumn(node.id, idx)}
-                                                    title="Delete Column"
-                                                >
-                                                    <FaTrash size={10} />
-                                                </button>
-                                            </div>
-                                        ))}
+                                                    <div style={{ color: '#666', marginRight: '4px', display: 'flex', alignItems: 'center' }}>
+                                                        <FaBars size={10} />
+                                                    </div>
+                                                    <input
+                                                        className="col-input name"
+                                                        value={col.name}
+                                                        onChange={(e) => onUpdateColumn(node.id, idx, 'name', e.target.value)}
+                                                        placeholder="Name"
+                                                    />
+                                                    <input
+                                                        className="col-input type"
+                                                        value={col.type}
+                                                        onChange={(e) => onUpdateColumn(node.id, idx, 'type', e.target.value)}
+                                                        placeholder="Type"
+                                                    />
+                                                    <div
+                                                        className={`col-pk ${col.isPk ? 'active' : ''}`}
+                                                        onClick={() => onUpdateColumn(node.id, idx, 'isPk', !col.isPk)}
+                                                        title="Toggle Primary Key"
+                                                    >
+                                                        🔑
+                                                    </div>
+                                                    <button
+                                                        className="edge-btn delete"
+                                                        style={{ marginLeft: '4px', padding: '4px' }}
+                                                        onClick={() => onDeleteColumn(node.id, idx)}
+                                                        title="Delete Column"
+                                                    >
+                                                        <FaTrash size={10} />
+                                                    </button>
+                                                </Reorder.Item>
+                                            ))}
+                                        </Reorder.Group>
                                         <button className="add-col-btn" onClick={() => onAddColumn(node.id)}>
                                             + Add Column
                                         </button>

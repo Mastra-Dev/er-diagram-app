@@ -23,6 +23,10 @@ const edgeTypes = {
   'custom-edge': CustomEdge,
 };
 
+import Dashboard from './components/Dashboard';
+
+// ... existing imports
+
 const initialNodes = [
   {
     id: '1',
@@ -47,10 +51,12 @@ function AppContent() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const [diagramName, setDiagramName] = useState('My Diagram');
   const [diagramId, setDiagramId] = useState(null);
+  const [view, setView] = useState('dashboard'); // 'dashboard' | 'editor'
 
   // Callbacks for Node interactions
   const onConnect = useCallback((params) => {
     setEdges((eds) => addEdge({ ...params, type: 'custom-edge', data: { relationType: '1:1' }, style: { strokeWidth: 2, stroke: '#e0e0e0' } }, eds));
+    setTriggerSave(Date.now());
   }, [setEdges]);
 
   const updateNodeData = (nodeId, processData) => {
@@ -67,6 +73,7 @@ function AppContent() {
 
   const onUpdateTableName = useCallback((id, newName) => {
     updateNodeData(id, (data) => ({ ...data, label: newName }));
+    setTriggerSave(Date.now());
   }, []);
 
   const onAddColumn = useCallback((id) => {
@@ -74,6 +81,7 @@ function AppContent() {
       ...data,
       columns: [...data.columns, { name: 'new_col', type: 'varchar', isPk: false }]
     }));
+    setTriggerSave(Date.now());
   }, []);
 
   const onUpdateColumn = useCallback((id, colIndex, field, value) => {
@@ -82,6 +90,7 @@ function AppContent() {
       newCols[colIndex] = { ...newCols[colIndex], [field]: value };
       return { ...data, columns: newCols };
     });
+    setTriggerSave(Date.now());
   }, []);
 
   // Hydrate functions into data for custom nodes
@@ -113,16 +122,28 @@ function AppContent() {
       },
     };
     setNodes((nds) => nds.concat(newNode));
+    setTriggerSave(Date.now());
   };
 
   const deleteTable = (id) => {
     setNodes((nds) => nds.filter((node) => node.id !== id));
     setEdges((eds) => eds.filter((edge) => edge.source !== id && edge.target !== id));
+    setTriggerSave(Date.now());
   };
 
-  const saveDiagram = async () => {
-    // Only save serializable data (remove functions)
-    const serializableNodes = nodes.map(n => ({
+  const onEdgesDelete = useCallback(() => {
+    setTriggerSave(Date.now());
+  }, []);
+
+  // Auto Save Logic
+  const [saveStatus, setSaveStatus] = useState('saved'); // 'saved', 'saving', 'error'
+  const [triggerSave, setTriggerSave] = useState(null); // Timestamp to trigger save
+
+  const saveDiagram = async (currentNodes, currentEdges) => {
+    if (!diagramId) return;
+
+    setSaveStatus('saving');
+    const serializableNodes = currentNodes.map(n => ({
       ...n,
       data: {
         label: n.data.label,
@@ -132,7 +153,7 @@ function AppContent() {
 
     const payload = {
       name: diagramName,
-      data: { nodes: serializableNodes, edges },
+      data: { nodes: serializableNodes, edges: currentEdges },
       id: diagramId
     };
 
@@ -144,52 +165,107 @@ function AppContent() {
       });
       const result = await res.json();
       if (result.id) {
+        setSaveStatus('saved');
         setDiagramId(result.id);
-        alert('Diagram saved!');
       }
     } catch (err) {
       console.error(err);
-      alert('Failed to save');
+      setSaveStatus('error');
     }
   };
 
-  const loadDiagram = useCallback(async () => {
-    // Load latest for now
-    try {
-      const res = await fetch(`${API_URL}/load`);
-      const result = await res.json();
-      if (result && result.length > 0) {
-        const latest = result[0];
-        setDiagramId(latest.id);
-        setDiagramName(latest.name);
+  // Trigger Save Effect
+  useEffect(() => {
+    if (triggerSave && diagramId) {
+      saveDiagram(nodes, edges);
+    }
+  }, [triggerSave]);
 
-        const loadedData = latest.data;
-        if (loadedData.nodes) {
-          // Re-attach functions
-          const hydratedNodes = loadedData.nodes.map(n => ({
-            ...n,
-            type: 'table', // ensure type
-            data: {
-              ...n.data,
-              onUpdateTableName,
-              onAddColumn,
-              onUpdateColumn
-            }
-          }));
-          setNodes(hydratedNodes);
-          setEdges(loadedData.edges || []);
-        }
+  const onNodeDragStop = useCallback((event, node) => {
+    setTriggerSave(Date.now());
+  }, []);
+
+  const loadDiagram = useCallback(async (idToLoad) => {
+    if (!idToLoad) return;
+    try {
+      const res = await fetch(`${API_URL}/load/${idToLoad}`);
+      if (!res.ok) throw new Error('Not found');
+      const result = await res.json();
+
+      setDiagramId(result.id);
+      setDiagramName(result.name);
+
+      const loadedData = result.data;
+      if (loadedData.nodes) {
+        // Re-attach functions
+        const hydratedNodes = loadedData.nodes.map(n => ({
+          ...n,
+          type: 'table',
+          data: {
+            ...n.data,
+            onUpdateTableName,
+            onAddColumn,
+            onUpdateColumn
+          }
+        }));
+        setNodes(hydratedNodes);
+        setEdges(loadedData.edges || []);
       }
     } catch (err) {
       console.error(err);
-      // alert('Failed to load'); // Suppress error on auto-load
+      alert('Failed to load diagram');
     }
   }, [onUpdateTableName, onAddColumn, onUpdateColumn, setNodes, setEdges]);
 
-  // Auto-load on mount
-  useEffect(() => {
-    loadDiagram();
-  }, [loadDiagram]);
+  const handleSelectProject = (id) => {
+    setDiagramId(id);
+    setView('editor');
+    loadDiagram(id);
+  };
+
+  const handleCreateProject = async (name) => {
+    const initialName = name || 'Untitled Diagram';
+    setNodes(initialNodes);
+    setEdges([]);
+    setDiagramName(initialName);
+
+    // Auto save immediately to create ID
+    const payload = {
+      name: initialName,
+      data: { nodes: initialNodes, edges: [] }
+    };
+    try {
+      const res = await fetch(`${API_URL}/save`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const result = await res.json();
+      if (result.id) {
+        setDiagramId(result.id);
+        setView('editor');
+        setSaveStatus('saved');
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Failed to init project");
+    }
+  };
+
+  const handleBackToDashboard = () => {
+    setView('dashboard');
+    setDiagramId(null);
+  };
+
+
+  if (view === 'dashboard') {
+    return (
+      <Dashboard
+        onSelectProject={handleSelectProject}
+        onCreateProject={handleCreateProject}
+      />
+    );
+  }
 
   return (
     <div className="app-layout">
@@ -204,17 +280,37 @@ function AppContent() {
       <div style={{ flex: 1, position: 'relative', height: '100vh' }}>
 
         <div className="ui-panel">
-          <h3 style={{ margin: 0, color: 'white' }}>ER Builder</h3>
-          <input
-            value={diagramName}
-            onChange={(e) => setDiagramName(e.target.value)}
-            className="editable-input"
-            style={{ marginBottom: '8px' }}
-          />
-          {/* Add Table moved to Sidebar */}
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-            <button onClick={saveDiagram} className="ui-btn secondary">Save</button>
-            <button onClick={loadDiagram} className="ui-btn secondary">Load</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <button
+              onClick={handleBackToDashboard}
+              className="ui-btn secondary"
+              style={{ marginRight: '10px', fontSize: '12px', padding: '5px 10px' }}
+            >
+              &larr; Back
+            </button>
+            <h3 style={{ margin: 0, color: 'white' }}>ER Builder</h3>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', marginBottom: '8px' }}>
+            <input
+              value={diagramName}
+              onChange={(e) => {
+                setDiagramName(e.target.value);
+                setTriggerSave(Date.now());
+              }}
+              className="editable-input"
+              style={{ flex: 1 }}
+            />
+            <div style={{
+              fontSize: '12px',
+              color: saveStatus === 'error' ? '#ff4444' : '#888',
+              fontStyle: 'italic',
+              minWidth: '60px',
+              textAlign: 'right'
+            }}>
+              {saveStatus === 'saved' && 'Saved'}
+              {saveStatus === 'saving' && 'Saving...'}
+              {saveStatus === 'error' && 'Error'}
+            </div>
           </div>
         </div>
         <ReactFlow
@@ -223,6 +319,8 @@ function AppContent() {
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          onNodeDragStop={onNodeDragStop}
+          onEdgesDelete={onEdgesDelete}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           fitView

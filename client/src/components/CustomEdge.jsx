@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { BaseEdge, EdgeLabelRenderer, getBezierPath, useReactFlow } from '@xyflow/react';
+import { BaseEdge, EdgeLabelRenderer, getSmoothStepPath, useReactFlow } from '@xyflow/react';
 
 const CustomEdge = ({
     id,
@@ -11,17 +10,48 @@ const CustomEdge = ({
     targetPosition,
     style = {},
     markerEnd,
-    selected, // React Flow prop: true if edge is selected
-    data
+    selected,
+    data,
+    sourceHandleId,
+    source
 }) => {
-    const { setEdges } = useReactFlow();
-    const [edgePath, labelX, labelY] = getBezierPath({
+    const { setEdges, getEdges, getNodes } = useReactFlow();
+
+    // "Sibling Rank" System with Y-Sorting
+    const allEdges = getEdges();
+    const allNodes = getNodes();
+
+    // Filter siblings sharing the exact source handle
+    const siblings = allEdges.filter(e => e.source === source && e.sourceHandle === sourceHandleId);
+
+    // Sort by Target Node Y Position (Top to Bottom)
+    // allowing lines to peel off in order
+    const siblingsWithPos = siblings.map(e => {
+        const targetNode = allNodes.find(n => n.id === e.target);
+        return {
+            id: e.id,
+            y: targetNode ? targetNode.position.y : 0
+        };
+    });
+    siblingsWithPos.sort((a, b) => a.y - b.y);
+
+    const myRank = siblingsWithPos.findIndex(e => e.id === id);
+    const rank = myRank >= 0 ? myRank : 0;
+
+    // Offset: Base 25px + (Rank * 20px) = orderly spacing
+    const finalOffset = 25 + (rank * 20);
+
+
+
+    const [edgePath, labelX, labelY] = getSmoothStepPath({
         sourceX,
         sourceY,
         sourcePosition,
         targetX,
         targetY,
         targetPosition,
+        borderRadius: 10,
+        offset: finalOffset,
     });
 
     const onEdgeClick = (evt, id) => {
@@ -68,7 +98,7 @@ const CustomEdge = ({
                         className="nodrag nopan"
                     >
                         <button className="edge-btn" onClick={() => updateType('1:1')} style={{ background: relationLabel === '1:1' ? '#444' : 'transparent' }}>1:1</button>
-                        <button className="edge-btn" onClick={() => updateType('1:N')} style={{ background: relationLabel === '1:N' ? '#444' : 'transparent' }}>1:N</button>
+                        <button className="edge-btn" onClick={() => updateType('1:M')} style={{ background: relationLabel === '1:M' ? '#444' : 'transparent' }}>1:M</button>
                         <button className="edge-btn" onClick={() => updateType('M:M')} style={{ background: relationLabel === 'M:M' ? '#444' : 'transparent' }}>M:M</button>
                         <div style={{ width: '1px', background: '#444' }}></div>
                         <button className="edge-btn delete" onClick={deleteEdge}>🗑️</button>

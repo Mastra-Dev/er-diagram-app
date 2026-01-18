@@ -60,17 +60,17 @@ const TableNode = ({ data, id, selected }) => {
                         >
                             <FaTimes size={10} />
                         </button>
-                        {/* Handles for column connections */}
+                        {/* Handles for column connections - Standard Left/Right */}
                         <Handle
-                            type="target"
+                            type="source"
                             position={Position.Left}
-                            id={`target-${index}`}
+                            id={`left-${index}`}
                             style={{ ...columnHandleStyle, left: '-8px' }}
                         />
                         <Handle
                             type="source"
                             position={Position.Right}
-                            id={`source-${index}`}
+                            id={`right-${index}`}
                             style={{ ...columnHandleStyle, right: '-8px' }}
                         />
                     </div>

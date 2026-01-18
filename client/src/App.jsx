@@ -7,7 +7,8 @@ import {
   useNodesState,
   useEdgesState,
   MiniMap,
-  ReactFlowProvider
+  ReactFlowProvider,
+  ConnectionMode
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
@@ -351,6 +352,7 @@ function AppContent() {
           onEdgesDelete={onEdgesDelete}
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
+          connectionMode={ConnectionMode.Loose}
           fitView
           colorMode="dark"
         >

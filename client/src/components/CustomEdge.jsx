@@ -18,8 +18,9 @@ const CustomEdge = ({
     const { setEdges, getEdges, getNodes } = useReactFlow();
 
     // "Sibling Rank" System with Y-Sorting
-    const allEdges = getEdges();
-    const allNodes = getNodes();
+    // Safety: Ensure hooks return arrays
+    const allEdges = (getEdges && getEdges()) || [];
+    const allNodes = (getNodes && getNodes()) || [];
 
     // Filter siblings sharing the exact source handle
     const siblings = allEdges.filter(e => e.source === source && e.sourceHandle === sourceHandleId);
@@ -30,7 +31,7 @@ const CustomEdge = ({
         const targetNode = allNodes.find(n => n.id === e.target);
         return {
             id: e.id,
-            y: targetNode ? targetNode.position.y : 0
+            y: (targetNode && targetNode.position) ? targetNode.position.y : 0
         };
     });
     siblingsWithPos.sort((a, b) => a.y - b.y);
@@ -66,6 +67,10 @@ const CustomEdge = ({
             }
             return e;
         }));
+        // Trigger Auto-Save in App.jsx
+        if (data?.onUpdate) {
+            data.onUpdate();
+        }
     };
 
     const deleteEdge = () => {

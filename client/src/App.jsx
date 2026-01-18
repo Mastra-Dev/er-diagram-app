@@ -55,10 +55,22 @@ function AppContent() {
   const [view, setView] = useState('dashboard'); // 'dashboard' | 'editor'
 
   // Callbacks for Node interactions
-  const onConnect = useCallback((params) => {
-    setEdges((eds) => addEdge({ ...params, type: 'custom-edge', data: { relationType: '1:1' }, style: { strokeWidth: 2, stroke: '#e0e0e0' } }, eds));
+  const onEdgeDataChange = useCallback(() => {
     setTriggerSave(Date.now());
-  }, [setEdges]);
+  }, []);
+
+  const onConnect = useCallback((params) => {
+    setEdges((eds) => addEdge({
+      ...params,
+      type: 'custom-edge',
+      data: {
+        relationType: '1:1',
+        onUpdate: onEdgeDataChange
+      },
+      style: { strokeWidth: 2, stroke: '#e0e0e0' }
+    }, eds));
+    setTriggerSave(Date.now());
+  }, [setEdges, onEdgeDataChange]);
 
   const updateNodeData = (nodeId, processData) => {
     setNodes((nds) =>
@@ -236,13 +248,22 @@ function AppContent() {
           }
         }));
         setNodes(hydratedNodes);
-        setEdges(loadedData.edges || []);
+
+        // Re-attach functions to Edges
+        const hydratedEdges = (loadedData.edges || []).map(e => ({
+          ...e,
+          data: {
+            ...e.data,
+            onUpdate: onEdgeDataChange
+          }
+        }));
+        setEdges(hydratedEdges);
       }
     } catch (err) {
       console.error(err);
       alert('Failed to load diagram');
     }
-  }, [onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, setNodes, setEdges]);
+  }, [onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, onEdgeDataChange, setNodes, setEdges]);
 
   const handleSelectProject = (id) => {
     setDiagramId(id);

@@ -93,6 +93,14 @@ function AppContent() {
     setTriggerSave(Date.now());
   }, []);
 
+  const onDeleteColumn = useCallback((id, colIndex) => {
+    updateNodeData(id, (data) => {
+      const newCols = data.columns.filter((_, index) => index !== colIndex);
+      return { ...data, columns: newCols };
+    });
+    setTriggerSave(Date.now());
+  }, []);
+
   // Hydrate functions into data for custom nodes
   useEffect(() => {
     setNodes((nds) => nds.map(node => ({
@@ -101,10 +109,13 @@ function AppContent() {
         ...node.data,
         onUpdateTableName,
         onAddColumn,
-        onUpdateColumn
+        onUpdateTableName,
+        onAddColumn,
+        onUpdateColumn,
+        onDeleteColumn
       }
     })));
-  }, [onUpdateTableName, onAddColumn, onUpdateColumn, setNodes]);
+  }, [onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, setNodes]);
 
 
   const addTable = () => {
@@ -118,7 +129,10 @@ function AppContent() {
         columns: [{ name: 'id', type: 'bigint', isPk: true }],
         onUpdateTableName,
         onAddColumn,
-        onUpdateColumn
+        onUpdateTableName,
+        onAddColumn,
+        onUpdateColumn,
+        onDeleteColumn
       },
     };
     setNodes((nds) => nds.concat(newNode));
@@ -205,7 +219,10 @@ function AppContent() {
             ...n.data,
             onUpdateTableName,
             onAddColumn,
-            onUpdateColumn
+            onUpdateTableName,
+            onAddColumn,
+            onUpdateColumn,
+            onDeleteColumn
           }
         }));
         setNodes(hydratedNodes);
@@ -215,7 +232,7 @@ function AppContent() {
       console.error(err);
       alert('Failed to load diagram');
     }
-  }, [onUpdateTableName, onAddColumn, onUpdateColumn, setNodes, setEdges]);
+  }, [onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, setNodes, setEdges]);
 
   const handleSelectProject = (id) => {
     setDiagramId(id);
@@ -275,6 +292,7 @@ function AppContent() {
         onUpdateTableName={onUpdateTableName}
         onAddColumn={onAddColumn}
         onUpdateColumn={onUpdateColumn}
+        onDeleteColumn={onDeleteColumn}
         onDeleteTable={deleteTable}
       />
       <div style={{ flex: 1, position: 'relative', height: '100vh' }}>

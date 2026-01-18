@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useReactFlow } from '@xyflow/react';
+import { FaTrash } from 'react-icons/fa';
 
-const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteTable }) => {
+const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, onDeleteTable }) => {
     const { setCenter } = useReactFlow();
     const [activeNodeId, setActiveNodeId] = useState(null);
 
@@ -65,6 +66,14 @@ const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateCo
                                                 >
                                                     🔑
                                                 </div>
+                                                <button
+                                                    className="edge-btn delete"
+                                                    style={{ marginLeft: '4px', padding: '4px' }}
+                                                    onClick={() => onDeleteColumn(node.id, idx)}
+                                                    title="Delete Column"
+                                                >
+                                                    <FaTrash size={10} />
+                                                </button>
                                             </div>
                                         ))}
                                         <button className="add-col-btn" onClick={() => onAddColumn(node.id)}>

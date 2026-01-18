@@ -1,8 +1,9 @@
 import React, { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import { FaTimes } from 'react-icons/fa';
 
 const TableNode = ({ data, id, selected }) => {
-    const { label, columns, onAddColumn, onUpdateTableName, onUpdateColumn } = data;
+    const { label, columns, onAddColumn, onUpdateTableName, onUpdateColumn, onDeleteColumn } = data;
 
     // Only show handles when selected
     const handleStyle = {
@@ -31,7 +32,7 @@ const TableNode = ({ data, id, selected }) => {
             </div>
             <div className="table-node-body">
                 {columns.map((col, index) => (
-                    <div key={index} className="table-row">
+                    <div key={index} className="table-row" style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                         <div style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                             {col.isPk && <span className="pk">PK</span>}
                             <input
@@ -49,6 +50,16 @@ const TableNode = ({ data, id, selected }) => {
                             placeholder="bigint"
                             style={{ width: '60px', textAlign: 'right', color: '#747bff' }}
                         />
+                        <button
+                            className="delete-col-btn"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteColumn(id, index);
+                            }}
+                            title="Delete Column"
+                        >
+                            <FaTimes size={10} />
+                        </button>
                         {/* Handles for column connections */}
                         <Handle
                             type="target"

@@ -55,25 +55,29 @@ app.post('/api/save', async (req, res) => {
 });
 
 // Load Diagram (Latests or Specific)
-app.get('/api/load', async (req, res) => {
-    // For MVP, just load the entries.
+// Load Diagram List (Metadata only)
+app.get('/api/list', async (req, res) => {
     try {
-        const [rows] = await db.query('SELECT * FROM diagrams ORDER BY updated_at DESC');
-        // Parse data JSON
-        const diagrams = rows.map(r => ({ ...r, data: JSON.parse(r.data) }));
-        res.json(diagrams);
+        const [rows] = await db.query('SELECT id, name, updated_at FROM diagrams ORDER BY updated_at DESC');
+        res.json(rows);
     } catch (err) {
         console.error(err);
-        res.status(500).json({ error: 'Failed to load diagrams' });
+        res.status(500).json({ error: 'Failed to load diagram list' });
     }
 });
 
+// Load Specific Diagram
 app.get('/api/load/:id', async (req, res) => {
     try {
         const [rows] = await db.query('SELECT * FROM diagrams WHERE id = ?', [req.params.id]);
         if (rows.length > 0) {
             const diagram = rows[0];
-            diagram.data = JSON.parse(diagram.data);
+            try {
+                diagram.data = JSON.parse(diagram.data);
+            } catch (e) {
+                console.error("Error parsing JSON", e);
+                diagram.data = { nodes: [], edges: [] };
+            }
             res.json(diagram);
         } else {
             res.status(404).json({ error: 'Diagram not found' });
@@ -81,6 +85,17 @@ app.get('/api/load/:id', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to load diagram' });
+    }
+});
+
+// Delete Diagram
+app.delete('/api/delete/:id', async (req, res) => {
+    try {
+        await db.query('DELETE FROM diagrams WHERE id = ?', [req.params.id]);
+        res.json({ message: 'Diagram deleted' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to delete diagram' });
     }
 });
 

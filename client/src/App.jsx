@@ -377,7 +377,26 @@ function AppContent() {
           fitView
           colorMode="dark"
         >
-          <Background />
+          <svg style={{ position: 'absolute', top: 0, left: 0 }}>
+            <defs>
+              {/* 1:N Crow Foot Marker */}
+              <marker id="crow-foot-start" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+                <path d="M12,6 L0,0 M12,6 L0,12 M12,6 L0,6" fill="none" stroke="#e0e0e0" strokeWidth="1.5" />
+              </marker>
+              <marker id="crow-foot-end" markerWidth="12" markerHeight="12" refX="0" refY="6" orient="auto">
+                <path d="M0,6 L12,0 M0,6 L12,12 M0,6 L12,6" fill="none" stroke="#e0e0e0" strokeWidth="1.5" />
+              </marker>
+
+              {/* 1:1 Bar Marker */}
+              <marker id="one-bar-start" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+                <path d="M9,0 L9,12 M3,0 L3,12" fill="none" stroke="#e0e0e0" strokeWidth="1.5" />
+              </marker>
+              <marker id="one-bar-end" markerWidth="12" markerHeight="12" refX="0" refY="6" orient="auto">
+                <path d="M3,0 L3,12 M9,0 L9,12" fill="none" stroke="#e0e0e0" strokeWidth="1.5" />
+              </marker>
+            </defs>
+          </svg>
+          <Background color="#1a1a1a" gap={20} />
           <Controls />
           <MiniMap />
         </ReactFlow>

@@ -122,6 +122,17 @@ function AppContent() {
     setTriggerSave(Date.now());
   }, []);
 
+  const updateNodeZIndex = useCallback((nodeId, zIndex) => {
+    setNodes((nds) => nds.map(node => {
+      if (node.id === nodeId) {
+        // Only update if changed to avoid loop/render thrashing
+        if (node.zIndex === zIndex) return node;
+        return { ...node, zIndex };
+      }
+      return node;
+    }));
+  }, [setNodes]);
+
   // Hydrate functions into data for custom nodes
   useEffect(() => {
     setNodes((nds) => nds.map(node => ({
@@ -133,10 +144,11 @@ function AppContent() {
         onUpdateTableName,
         onAddColumn,
         onUpdateColumn,
-        onDeleteColumn
+        onDeleteColumn,
+        updateNodeZIndex // Added handler
       }
     })));
-  }, [onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, setNodes]);
+  }, [onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, updateNodeZIndex, setNodes]);
 
 
   const addTable = () => {
@@ -153,7 +165,8 @@ function AppContent() {
         onUpdateTableName,
         onAddColumn,
         onUpdateColumn,
-        onDeleteColumn
+        onDeleteColumn,
+        updateNodeZIndex
       },
     };
     setNodes((nds) => nds.concat(newNode));
@@ -244,7 +257,8 @@ function AppContent() {
             onUpdateTableName,
             onAddColumn,
             onUpdateColumn,
-            onDeleteColumn
+            onDeleteColumn,
+            updateNodeZIndex
           }
         }));
         setNodes(hydratedNodes);
@@ -298,6 +312,92 @@ function AppContent() {
       console.error(e);
       alert("Failed to init project");
     }
+  };
+
+  const handleExport = () => {
+    const serializableNodes = nodes.map(n => ({
+      ...n,
+      data: {
+        label: n.data.label,
+        columns: n.data.columns
+      }
+    }));
+
+    const exportData = {
+      name: diagramName,
+      version: '1.0',
+      timestamp: Date.now(),
+      nodes: serializableNodes,
+      edges: edges
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const href = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = href;
+    link.download = `${diagramName.replace(/\s+/g, '_')}_er_diagram.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const imported = JSON.parse(event.target.result);
+
+        // Basic validation
+        if (!imported.nodes || !imported.edges) {
+          alert('Invalid file format');
+          return;
+        }
+
+        if (confirm(`Importing will overwrite current diagram "${diagramName}". Continue?`)) {
+          setDiagramName(imported.name || 'Imported Diagram');
+
+          // Re-hydrate nodes
+          const hydratedNodes = imported.nodes.map(n => ({
+            ...n,
+            type: 'table',
+            data: {
+              ...n.data,
+              columns: (n.data.columns || []).map(c => ({ ...c, id: c.id || Math.random().toString(36).substr(2, 9) })), // Ensure ID
+              onUpdateTableName,
+              onAddColumn,
+              onUpdateTableName,
+              onAddColumn, // Duplicate ref in original? keeping safe
+              onUpdateColumn,
+              onDeleteColumn,
+              updateNodeZIndex
+            }
+          }));
+
+          // Re-hydrate edges
+          const hydratedEdges = imported.edges.map(e => ({
+            ...e,
+            data: {
+              ...e.data,
+              onUpdate: onEdgeDataChange
+            }
+          }));
+
+          setNodes(hydratedNodes);
+          setEdges(hydratedEdges);
+          setTriggerSave(Date.now()); // Auto save after import
+        }
+      } catch (err) {
+        console.error(err);
+        alert('Failed to parse JSON file');
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset input
+    e.target.value = '';
   };
 
   const handleBackToDashboard = () => {
@@ -361,6 +461,28 @@ function AppContent() {
               {saveStatus === 'saving' && 'Saving...'}
               {saveStatus === 'error' && 'Error'}
             </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+            <button
+              onClick={handleExport}
+              className="ui-btn"
+              style={{ flex: 1, fontSize: '11px', padding: '6px', background: '#333', border: '1px solid #555' }}
+            >
+              Export JSON
+            </button>
+            <label
+              className="ui-btn"
+              style={{ flex: 1, fontSize: '11px', padding: '6px', background: '#333', border: '1px solid #555', textAlign: 'center', cursor: 'pointer', display: 'block' }}
+            >
+              Import JSON
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                style={{ display: 'none' }}
+              />
+            </label>
           </div>
         </div>
         <ReactFlow

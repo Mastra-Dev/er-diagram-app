@@ -422,7 +422,226 @@ input.editable-input:focus {
   /* Show on hover */
 }
 
-.delete-col-btn:hover {
+
+/* Attribute Indicators */
+.indicator-text {
+  font-size: 10px;
+  font-weight: 700;
+  margin-right: 2px;
+  color: #888;
+  cursor: pointer;
+}
+
+.indicator-text[title="Nullable"] {
+  color: #a0a0a0;
+  display: inline-block;
+  padding: 0 2px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  line-height: 1;
+}
+
+.indicator-text[title="Unsigned"] {
+  color: #ff9f43;
+  /* Orange for Unsigned */
+}
+
+.indicator-icon {
+  display: flex;
+  align-items: center;
+  margin-right: 2px;
+  cursor: pointer;
+  opacity: 0.8;
+}
+
+.indicator-icon:hover {
+  opacity: 1;
+}
+
+/* Column Menu Styling */
+.column-menu {
+  position: absolute;
+
+  z-index: 1000;
+  background-color: #1e2025;
+  /* Darker bg like DrawSQL */
+  border: 1px solid #333;
+  border-radius: 6px;
+  width: 280px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  font-family: 'Inter', sans-serif;
+  color: #fff;
+  overflow: hidden;
+}
+
+.column-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #333;
+}
+
+.column-menu-header .title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8b92a5;
+  letter-spacing: 0.5px;
+}
+
+.column-menu-header .close-btn {
+  background: transparent;
+  border: none;
+  color: #8b92a5;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.column-menu-header .close-btn:hover {
+  color: #fff;
+}
+
+.column-menu-body {
+  padding: 16px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-right: 12px;
+  accent-color: #00d09c;
+  /* Green accent like DrawSQL */
+  cursor: pointer;
+}
+
+.checkbox-row .label-text {
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+.input-group {
+  margin-top: 16px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #8b92a5;
+  margin-bottom: 6px;
+}
+
+.menu-input,
+.menu-textarea {
+  width: 100%;
+  background-color: #2b2d35;
+  border: 1px solid #3f414a;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #e0e0e0;
+  font-size: 13px;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.menu-textarea {
+  resize: vertical;
+  min-height: 60px;
+  font-family: inherit;
+}
+
+.menu-input:focus,
+.menu-textarea:focus {
+  outline: none;
+  border-color: #555;
+}
+
+.menu-input::placeholder,
+.menu-textarea::placeholder {
+  color: #666;
+}
+
+.column-menu-footer {
+  padding: 12px 16px;
+  border-top: 1px solid #333;
+}
+
+.delete-btn-full {
+  width: 100%;
+  background-color: transparent;
+  border: 1px solid #3f414a;
+  color: #e0e0e0;
+  padding: 8px;
+  font-size: 13px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  transition: all 0.2s;
+}
+
+.delete-btn-full:hover {
+  background-color: rgba(255, 68, 68, 0.1);
+  border-color: #ff4444;
   color: #ff4444;
-  background: rgba(255, 68, 68, 0.1);
+}
+
+/* Custom Tooltip Styling */
+.custom-tooltip {
+  position: absolute;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #4f5b72;
+  color: white;
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  min-width: 120px;
+  max-width: 200px;
+  z-index: 9999;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+  white-space: normal;
+}
+
+/* Arrow for tooltip */
+.custom-tooltip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #4f5b72 transparent transparent transparent;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.8;
+  letter-spacing: 0.5px;
+}
+
+.tooltip-content {
+  font-size: 11px;
+  line-height: 1.4;
+  word-wrap: break-word;
 }

@@ -4,7 +4,7 @@ import { FaEllipsisH, FaComment, FaTag, FaFingerprint } from 'react-icons/fa'; /
 import ColumnMenu from './ColumnMenu';
 
 const TableNode = ({ data, id, selected }) => {
-    const { label, columns, onAddColumn, onUpdateTableName, onUpdateColumn, onDeleteColumn, updateNodeZIndex } = data;
+    const { label, columns, onAddColumn, onUpdateTableName, onUpdateColumn, onDeleteColumn, updateNodeZIndex, headerColor } = data;
     const [activeMenuColId, setActiveMenuColId] = useState(null);
     const [tooltip, setTooltip] = useState(null); // { type: 'comment' | 'default', content: string, colId: string }
 
@@ -39,7 +39,7 @@ const TableNode = ({ data, id, selected }) => {
 
     return (
         <div className="table-node" style={{ zIndex: (activeMenuColId || tooltip) ? 1000 : 1 }}>
-            <div className="table-node-header">
+            <div className="table-node-header" style={{ backgroundColor: headerColor || '#1e1e1e', transition: 'background-color 0.3s' }}>
                 <input
                     className="editable-input"
                     value={label}

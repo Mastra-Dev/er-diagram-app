@@ -89,6 +89,11 @@ function AppContent() {
     setTriggerSave(Date.now());
   }, []);
 
+  const onUpdateTableColor = useCallback((id, color) => {
+    updateNodeData(id, (data) => ({ ...data, headerColor: color }));
+    setTriggerSave(Date.now());
+  }, []);
+
   const onAddColumn = useCallback((id) => {
     updateNodeData(id, (data) => ({
       ...data,
@@ -140,15 +145,14 @@ function AppContent() {
       data: {
         ...node.data,
         onUpdateTableName,
-        onAddColumn,
-        onUpdateTableName,
+        onUpdateTableColor, // Added handler
         onAddColumn,
         onUpdateColumn,
         onDeleteColumn,
-        updateNodeZIndex // Added handler
+        updateNodeZIndex
       }
     })));
-  }, [onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, updateNodeZIndex, setNodes]);
+  }, [onUpdateTableName, onUpdateTableColor, onAddColumn, onUpdateColumn, onDeleteColumn, updateNodeZIndex, setNodes]);
 
 
   const addTable = () => {
@@ -319,7 +323,8 @@ function AppContent() {
       ...n,
       data: {
         label: n.data.label,
-        columns: n.data.columns
+        columns: n.data.columns,
+        headerColor: n.data.headerColor
       }
     }));
 
@@ -421,6 +426,7 @@ function AppContent() {
         nodes={nodes}
         onAddTable={addTable}
         onUpdateTableName={onUpdateTableName}
+        onUpdateTableColor={onUpdateTableColor}
         onAddColumn={onAddColumn}
         onUpdateColumn={onUpdateColumn}
         onDeleteColumn={onDeleteColumn}
@@ -503,18 +509,18 @@ function AppContent() {
             <defs>
               {/* 1:N Crow Foot Marker */}
               <marker id="crow-foot-start" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
-                <path d="M12,6 L0,0 M12,6 L0,12 M12,6 L0,6" fill="none" stroke="#e0e0e0" strokeWidth="1.5" />
+                <path d="M12,6 L0,0 M12,6 L0,12 M12,6 L0,6" fill="none" stroke="#888" strokeWidth="1.5" />
               </marker>
               <marker id="crow-foot-end" markerWidth="12" markerHeight="12" refX="0" refY="6" orient="auto">
-                <path d="M0,6 L12,0 M0,6 L12,12 M0,6 L12,6" fill="none" stroke="#e0e0e0" strokeWidth="1.5" />
+                <path d="M0,6 L12,0 M0,6 L12,12 M0,6 L12,6" fill="none" stroke="#888" strokeWidth="1.5" />
               </marker>
 
               {/* 1:1 Bar Marker */}
               <marker id="one-bar-start" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
-                <path d="M9,0 L9,12 M3,0 L3,12" fill="none" stroke="#e0e0e0" strokeWidth="1.5" />
+                <path d="M9,0 L9,12 M3,0 L3,12" fill="none" stroke="#888" strokeWidth="1.5" />
               </marker>
               <marker id="one-bar-end" markerWidth="12" markerHeight="12" refX="0" refY="6" orient="auto">
-                <path d="M3,0 L3,12 M9,0 L9,12" fill="none" stroke="#e0e0e0" strokeWidth="1.5" />
+                <path d="M3,0 L3,12 M9,0 L9,12" fill="none" stroke="#888" strokeWidth="1.5" />
               </marker>
             </defs>
           </svg>

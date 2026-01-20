@@ -48,8 +48,8 @@ const CustomEdge = ({
     const myRank = siblingsWithPos.findIndex(e => e.id === id);
     const rank = myRank >= 0 ? myRank : 0;
 
-    // Offset: Base 25px + (Rank * 20px) = orderly spacing
-    let finalOffset = 25 + (rank * 20);
+    // Offset: Base 15px + (Rank * 10px) = tighter spacing
+    let finalOffset = 15 + (rank * 10);
 
     // COLLISION AVOIDANCE
     // If the vertical segment of this edge cuts through any node, push it out further.
@@ -61,13 +61,6 @@ const CustomEdge = ({
         let collision = false;
 
         // Calculated X position of the vertical lane
-        // Note: react flow smoothstep logic is complex, but generally:
-        // If exiting RIGHT: lane is at sourceX + offset
-        // If exiting LEFT: lane is at sourceX - offset
-        // We assume standard Right-to-Left or Left-to-Right flow logic here.
-        // For simplicity, we check a "danger zone" around sourceX + finalOffset (assuming Right exit)
-        // or we need to know the handle position accurately. 
-        // Let's assume Right Handle exit for now as per screenshots.
         const laneX = sourcePosition === 'right' ? sourceX + finalOffset : sourceX - finalOffset;
 
         for (const node of allNodes) {
@@ -96,7 +89,7 @@ const CustomEdge = ({
         }
 
         if (collision) {
-            finalOffset += 40; // Bump out by 40px
+            finalOffset += 20; // Bump out by 20px (smaller steps)
         } else {
             break; // Path is clear
         }
@@ -111,7 +104,7 @@ const CustomEdge = ({
         targetX,
         targetY,
         targetPosition,
-        borderRadius: 10,
+        borderRadius: 20, // Smoother corners
         offset: finalOffset,
     });
 
@@ -157,7 +150,7 @@ const CustomEdge = ({
                 path={edgePath}
                 markerStart={markerStartId}
                 markerEnd={markerEndId}
-                style={{ ...style, strokeWidth: 2, stroke: selected ? '#747bff' : '#555' }}
+                style={{ ...style, strokeWidth: 1.5, stroke: selected ? '#747bff' : '#888' }} // Thinner, lighter
             />
             {selected && (
                 <EdgeLabelRenderer>

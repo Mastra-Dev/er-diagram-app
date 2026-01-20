@@ -3,10 +3,10 @@ import { useReactFlow } from '@xyflow/react';
 import { FaTrash, FaBars, FaCog, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { Reorder } from 'framer-motion';
 
-const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateColumn, onDeleteColumn, onReorderColumns, onDeleteTable }) => {
+const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onUpdateTableColor, onAddColumn, onUpdateColumn, onDeleteColumn, onReorderColumns, onDeleteTable }) => {
     const { setCenter } = useReactFlow();
     const [activeNodeId, setActiveNodeId] = useState(null);
-    const [expandedColIds, setExpandedColIds] = useState(new Set());
+    const [activeColSettings, setActiveColSettings] = useState(null);
 
     // Sync active sidebar item with selected node
     const selectedNodeId = nodes.find(n => n.selected && n.type === 'table')?.id;
@@ -21,15 +21,28 @@ const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateCo
         setCenter(node.position.x + (node.measured?.width || 200) / 2, node.position.y + (node.measured?.height || 200) / 2, { zoom: 1, duration: 800 });
     };
 
-    const toggleColExpansion = (colId) => {
-        const newSet = new Set(expandedColIds);
-        if (newSet.has(colId)) {
-            newSet.delete(colId);
-        } else {
-            newSet.add(colId);
+    const toggleColSettings = (e, colId, nodeId, idx) => {
+        e.stopPropagation();
+        if (activeColSettings?.colId === colId) {
+            setActiveColSettings(null);
+            return;
         }
-        setExpandedColIds(newSet);
+
+        const rect = e.currentTarget.getBoundingClientRect();
+        setActiveColSettings({
+            colId,
+            nodeId,
+            colIndex: idx,
+            top: rect.top,
+            left: rect.right + 10, // 10px spacing from gear icon
+        });
     };
+
+
+
+    const activeCol = activeColSettings
+        ? nodes.find(n => n.id === activeColSettings.nodeId)?.data.columns[activeColSettings.colIndex]
+        : null;
 
     return (
         <aside className="sidebar">
@@ -63,6 +76,29 @@ const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateCo
                                             onChange={(e) => onUpdateTableName(node.id, e.target.value)}
                                         />
                                     </div>
+
+                                    <div className="detail-row">
+                                        <label>Header Color</label>
+                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                            {['#1e1e1e', '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#a855f7', '#ec4899'].map(color => (
+                                                <div
+                                                    key={color}
+                                                    onClick={() => onUpdateTableColor(node.id, color)}
+                                                    style={{
+                                                        width: '20px',
+                                                        height: '20px',
+                                                        borderRadius: '50%',
+                                                        backgroundColor: color,
+                                                        cursor: 'pointer',
+                                                        border: (node.data.headerColor || '#1e1e1e') === color ? '2px solid white' : '2px solid transparent',
+                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                                    }}
+                                                    title={color}
+                                                />
+                                            ))}
+                                        </div>
+                                    </div>
+
                                     <div className="detail-columns">
                                         <label>Columns</label>
                                         <Reorder.Group
@@ -103,8 +139,8 @@ const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateCo
                                                         </div>
                                                         <button
                                                             className="edge-btn"
-                                                            style={{ marginLeft: '4px', padding: '4px', color: expandedColIds.has(col.id) ? '#747bff' : '#666' }}
-                                                            onClick={() => toggleColExpansion(col.id)}
+                                                            style={{ marginLeft: '4px', padding: '4px', color: activeColSettings?.colId === col.id ? '#747bff' : '#666' }}
+                                                            onClick={(e) => toggleColSettings(e, col.id, node.id, idx)}
                                                             title="Column Settings"
                                                         >
                                                             <FaCog size={10} />
@@ -118,55 +154,6 @@ const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateCo
                                                             <FaTrash size={10} />
                                                         </button>
                                                     </div>
-
-                                                    {/* Expanded Settings */}
-                                                    {expandedColIds.has(col.id) && (
-                                                        <div className="column-settings">
-                                                            <div className="settings-row">
-                                                                <label className="checkbox-label">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={col.autoIncrement || false}
-                                                                        onChange={(e) => onUpdateColumn(node.id, idx, 'autoIncrement', e.target.checked)}
-                                                                    />
-                                                                    AI
-                                                                </label>
-                                                                <label className="checkbox-label">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={col.unsigned || false}
-                                                                        onChange={(e) => onUpdateColumn(node.id, idx, 'unsigned', e.target.checked)}
-                                                                    />
-                                                                    UN
-                                                                </label>
-                                                                <label className="checkbox-label">
-                                                                    <input
-                                                                        type="checkbox"
-                                                                        checked={col.nullable || false}
-                                                                        onChange={(e) => onUpdateColumn(node.id, idx, 'nullable', e.target.checked)}
-                                                                    />
-                                                                    NULL
-                                                                </label>
-                                                            </div>
-                                                            <div className="settings-input-group">
-                                                                <input
-                                                                    className="sidebar-input small"
-                                                                    value={col.defaultValue || ''}
-                                                                    onChange={(e) => onUpdateColumn(node.id, idx, 'defaultValue', e.target.value)}
-                                                                    placeholder="Value"
-                                                                />
-                                                            </div>
-                                                            <div className="settings-input-group">
-                                                                <textarea
-                                                                    className="sidebar-input small"
-                                                                    value={col.comment || ''}
-                                                                    onChange={(e) => onUpdateColumn(node.id, idx, 'comment', e.target.value)}
-                                                                    placeholder="Comment"
-                                                                    rows={2}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </Reorder.Item>
                                             ))}
                                         </Reorder.Group>
@@ -189,6 +176,70 @@ const Sidebar = ({ nodes, onAddTable, onUpdateTableName, onAddColumn, onUpdateCo
                     <div className="sidebar-empty">No tables yet. Click + to add.</div>
                 )}
             </div>
+
+            {/* Floating Settings Popover */}
+            {activeColSettings && activeCol && (
+                <>
+                    <div
+                        className="popover-backdrop"
+                        onClick={() => setActiveColSettings(null)}
+                    />
+                    <div
+                        className="sidebar-settings-popover"
+                        style={{
+                            top: activeColSettings.top,
+                            left: activeColSettings.left
+                        }}
+                    >
+                        <label className="checkbox-row">
+                            <input
+                                type="checkbox"
+                                checked={activeCol.autoIncrement || false}
+                                onChange={(e) => onUpdateColumn(activeColSettings.nodeId, activeColSettings.colIndex, 'autoIncrement', e.target.checked)}
+                            />
+                            <span className="label-text">Auto increment</span>
+                        </label>
+
+                        <label className="checkbox-row">
+                            <input
+                                type="checkbox"
+                                checked={activeCol.unsigned || false}
+                                onChange={(e) => onUpdateColumn(activeColSettings.nodeId, activeColSettings.colIndex, 'unsigned', e.target.checked)}
+                            />
+                            <span className="label-text">Unsigned</span>
+                        </label>
+
+                        <label className="checkbox-row" style={{ marginBottom: '10px' }}>
+                            <input
+                                type="checkbox"
+                                checked={activeCol.nullable || false}
+                                onChange={(e) => onUpdateColumn(activeColSettings.nodeId, activeColSettings.colIndex, 'nullable', e.target.checked)}
+                            />
+                            <span className="label-text">Nullable</span>
+                        </label>
+
+                        <div className="input-group">
+                            <label>Value</label>
+                            <input
+                                className="menu-input"
+                                value={activeCol.defaultValue || ''}
+                                onChange={(e) => onUpdateColumn(activeColSettings.nodeId, activeColSettings.colIndex, 'defaultValue', e.target.value)}
+                                placeholder="Value"
+                            />
+                        </div>
+                        <div className="input-group">
+                            <label>Comment</label>
+                            <textarea
+                                className="menu-textarea"
+                                value={activeCol.comment || ''}
+                                onChange={(e) => onUpdateColumn(activeColSettings.nodeId, activeColSettings.colIndex, 'comment', e.target.value)}
+                                placeholder="Optional description"
+                                rows={2}
+                            />
+                        </div>
+                    </div>
+                </>
+            )}
         </aside>
     );
 };
